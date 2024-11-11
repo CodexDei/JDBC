@@ -21,11 +21,11 @@ public class ProductoRepositorioImpl implements Repositorio<Producto>{
         List<Producto> productos = new ArrayList<>();
 
         try(Statement stmt = getInstance().createStatement();
-            ResultSet rst = stmt.executeQuery("SELECT * FROM productos")){
+            ResultSet rs = stmt.executeQuery("SELECT * FROM productos")){
 
-            while (rst.next()){
+            while (rs.next()){
 
-                Producto p = crearProducto(rst);
+                Producto p = crearProducto(rs);
 
                 productos.add(p);
             }
@@ -69,19 +69,46 @@ public class ProductoRepositorioImpl implements Repositorio<Producto>{
     @Override
     public void guardar(Producto producto) {
 
+        String sql;
+        if (producto.getId() != null && producto.getId()>0) {
+            sql = "UPDATE productos SET nombre=?, precio=? WHERE idproductos=?";
+        } else {
+            sql = "INSERT INTO productos(nombre, precio, fecha_registro) VALUES(?,?,?)";
+        }
+        try (PreparedStatement stmt = getInstance().prepareStatement(sql)) {
+            stmt.setString(1, producto.getNombre());
+            stmt.setLong(2, producto.getPrecio());
+
+            if (producto.getId() != null && producto.getId() > 0) {
+                stmt.setLong(3, producto.getId());
+            } else {
+                stmt.setDate(3, new Date(producto.getFechaRegistro().getTime()));
+            }
+
+            stmt.executeUpdate();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
     }
 
     @Override
     public void eliminar(Long id) {
 
+        try (PreparedStatement stmt = getInstance().prepareStatement("DELETE FROM productos WHERE idproductos=?")) {
+            stmt.setLong(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
     }
 
-    private static Producto crearProducto(ResultSet rst) throws SQLException {
+    private static Producto crearProducto(ResultSet rs) throws SQLException {
         Producto p = new Producto();
-        p.setId(rst.getLong("idproductos"));
-        p.setNombre(rst.getString("nombre"));
-        p.setPrecio(rst.getInt("precio"));
-        p.setFechaRegistro(rst.getDate("fecha_registro"));
+        p.setId(rs.getLong("idproductos"));
+        p.setNombre(rs.getString("nombre"));
+        p.setPrecio(rs.getInt("precio"));
+        p.setFechaRegistro(rs.getDate("fecha_registro"));
         return p;
     }
 }
