@@ -1,5 +1,6 @@
 package org.codexdei.java.jdbc;
 
+import org.codexdei.java.jdbc.modelo.Categoria;
 import org.codexdei.java.jdbc.modelo.Producto;
 import org.codexdei.java.jdbc.repositorio.ProductoRepositorioImpl;
 import org.codexdei.java.jdbc.repositorio.Repositorio;
@@ -25,6 +26,9 @@ public class EjemploJdbcUpDate {
             producto.setId(3L);
             producto.setNombre("Teclado Razer mecánico");
             producto.setPrecio(700);
+            Categoria categoria = new Categoria();
+            categoria.setIdCategoria(2L);
+            producto.setCategoria(categoria);
             repositorio.guardar(producto);
             System.out.println("Producto editado con éxito");
             repositorio.listar().forEach(System.out::println);
